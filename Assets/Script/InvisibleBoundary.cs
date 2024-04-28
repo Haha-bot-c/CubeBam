@@ -2,44 +2,43 @@ using UnityEngine;
 
 public class InvisibleBoundary : MonoBehaviour
 {
-    public Vector3 boundarySize = new Vector3(10f, 10f, 10f);
+    private const float BoundaryDivisionFactor = 2f;
+
+    [SerializeField] private Vector3 _boundarySize = new Vector3(10f, 10f, 10f);
+
+    private GameObject[] _cubes;
 
     private void Update()
     {
-        foreach (GameObject cube in GameObject.FindGameObjectsWithTag("Cube"))
+        _cubes = GameObject.FindGameObjectsWithTag("Cube");
+
+        foreach (GameObject cube in _cubes)
         {
-            if (cube.transform.position.x < transform.position.x - boundarySize.x / 2)
+            if (cube != null)
             {
-                cube.transform.position = new Vector3(transform.position.x - boundarySize.x / 2, cube.transform.position.y, cube.transform.position.z);
-            }
-            else if (cube.transform.position.x > transform.position.x + boundarySize.x / 2)
-            {
-                cube.transform.position = new Vector3(transform.position.x + boundarySize.x / 2, cube.transform.position.y, cube.transform.position.z);
-            }
-
-            if (cube.transform.position.y < transform.position.y - boundarySize.y / 2)
-            {
-                cube.transform.position = new Vector3(cube.transform.position.x, transform.position.y - boundarySize.y / 2, cube.transform.position.z);
-            }
-            else if (cube.transform.position.y > transform.position.y + boundarySize.y / 2)
-            {
-                cube.transform.position = new Vector3(cube.transform.position.x, transform.position.y + boundarySize.y / 2, cube.transform.position.z);
-            }
-
-            if (cube.transform.position.z < transform.position.z - boundarySize.z / 2)
-            {
-                cube.transform.position = new Vector3(cube.transform.position.x, cube.transform.position.y, transform.position.z - boundarySize.z / 2);
-            }
-            else if (cube.transform.position.z > transform.position.z + boundarySize.z / 2)
-            {
-                cube.transform.position = new Vector3(cube.transform.position.x, cube.transform.position.y, transform.position.z + boundarySize.z / 2);
+                ClampCubePosition(cube);
             }
         }
+    }
+
+    private void ClampCubePosition(GameObject cube)
+    {
+        Vector3 clampedPosition = cube.transform.position;
+
+        for (int i = 0; i < 3; i++)
+        {
+            float boundaryHalfSize = _boundarySize[i] / BoundaryDivisionFactor;
+            float boundaryMin = transform.position[i] - boundaryHalfSize;
+            float boundaryMax = transform.position[i] + boundaryHalfSize;
+            clampedPosition[i] = Mathf.Clamp(clampedPosition[i], boundaryMin, boundaryMax);
+        }
+
+        cube.transform.position = clampedPosition;
     }
 
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.cyan;
-        Gizmos.DrawWireCube(transform.position, boundarySize);
+        Gizmos.DrawWireCube(transform.position, _boundarySize);
     }
 }
