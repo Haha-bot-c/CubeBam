@@ -49,7 +49,7 @@ public class CubeBam : MonoBehaviour
 
     private bool ShouldSplitCube()
     {
-        float normalizedTime = 1f - Mathf.Clamp01(InitialSplitChance);
+        float normalizedSplitChance = 1f - Mathf.Clamp01(InitialSplitChance);
         float curveValue = _splitChanceCurve.Evaluate(normalizedTime);
         return Random.value < curveValue && Random.value > MinSplitChance;
     }
