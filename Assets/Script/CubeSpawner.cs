@@ -1,59 +1,40 @@
 using UnityEngine;
-using System.Collections.Generic;
 
 public class CubeSpawner : MonoBehaviour
 {
-    private const float ScaleFactor = 0.5f;
-    private const int MinNumCubes = 2;
-    private const int MaxNumCubes = 7;
-    private const float SplitChanceReductionRate = 0.3f;
+    private const float RangeX = 5f;
+    private const float RangeY = 10f;
+    private const float RangeZ = 5f;
 
-    [SerializeField] private float _minSplitChance = 0.1f;
-    [SerializeField] private Cube _cubePrefab;
-    [SerializeField] private CustomExplosion _customExplosion;
+    [SerializeField] private CubePool _cubePool;
+    [SerializeField] private float _spawnInterval = 1f;
 
-    private List<Cube> _cubes = new List<Cube>();
-    private float _splitChance = 1;
+    private float _spawnTimer = 0f;
 
-    private void OnMouseDown()
+    private void Update()
     {
-        if (TryGetComponent(out Cube clickedCube))
+        _spawnTimer += Time.deltaTime;
+
+        if (_spawnTimer >= _spawnInterval)
         {
-            SplitCube(clickedCube);
-            clickedCube.ApplyExplosionForce(transform.position, _cubes);
+            SpawnCube();
+            _spawnTimer = 0f;
         }
     }
 
-    private void SplitCube(Cube cube)
+    private void SpawnCube()
     {
-        _cubes.Remove(cube);
+        Cube cube = _cubePool.GetCubeFromPool();
 
-        if (ShouldSplitCube())
+        if (cube != null)
         {
-            _splitChance -= SplitChanceReductionRate;
-            Destroy(cube.gameObject);
-            _customExplosion.Explode(cube.transform.position);
-            int numCubes = Random.Range(MinNumCubes, MaxNumCubes);
+            Vector3 spawnPosition = new Vector3(
+                Random.Range(transform.position.x - RangeX, transform.position.x + RangeX),
+                transform.position.y + RangeY,
+                Random.Range(transform.position.z - RangeZ, transform.position.z + RangeZ)
+            );
 
-            for (int i = 0; i < numCubes; i++)
-            {
-                Cube newCube = Instantiate(_cubePrefab, cube.transform.position, Quaternion.identity);
-                newCube.TryGetComponent(out CubeSpawner cubeSpawner);
-                cubeSpawner._splitChance = _splitChance;
-                newCube.transform.localScale = cube.transform.localScale * ScaleFactor;
-                newCube.SetRandomColor();
-                _cubes.Add(newCube);
-            }
-        }
-        else
-        {
-            Destroy(cube.gameObject);
-            _customExplosion.Explode(cube.transform.position);
+            cube.transform.position = spawnPosition;
         }
     }
-
-    private bool ShouldSplitCube()
-    {
-        return Random.value < _splitChance && _splitChance > _minSplitChance;
-    } 
 }
