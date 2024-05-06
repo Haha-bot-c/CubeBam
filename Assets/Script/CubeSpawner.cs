@@ -2,9 +2,7 @@ using UnityEngine;
 
 public class CubeSpawner : MonoBehaviour
 {
-    private const float RangeX = 5f;
-    private const float RangeY = 10f;
-    private const float RangeZ = 5f;
+    private readonly Vector3 SpawnRange = new Vector3(5f, 10f, 5f);
 
     [SerializeField] private CubePool _cubePool;
     [SerializeField] private float _spawnInterval = 1f;
@@ -24,14 +22,14 @@ public class CubeSpawner : MonoBehaviour
 
     private void SpawnCube()
     {
-        Cube cube = _cubePool.GetCubeFromPool();
+        Cube cube = _cubePool.GiveCubeFromPool();
 
         if (cube != null)
         {
-            Vector3 spawnPosition = new Vector3(
-                Random.Range(transform.position.x - RangeX, transform.position.x + RangeX),
-                transform.position.y + RangeY,
-                Random.Range(transform.position.z - RangeZ, transform.position.z + RangeZ)
+            Vector3 spawnPosition = transform.position + new Vector3(
+                Random.Range(-SpawnRange.x, SpawnRange.x),
+                SpawnRange.y,
+                Random.Range(-SpawnRange.z, SpawnRange.z)
             );
 
             cube.transform.position = spawnPosition;
